@@ -1,19 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="180.0" prefWidth="305.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.ddiribas.controllers.MainController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="210.0" minWidth="330.0" prefHeight="285.0" prefWidth="359.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.ddiribas.controllers.MainController">
     <children>
-        <Label layoutX="24.0" layoutY="14.0" text="Path:" />
-        <Label layoutX="24.0" layoutY="63.0" text="Keyfile:" />
-        <TextField fx:id="pathField" layoutX="24.0" layoutY="30.0" prefWidth="200.0" />
-        <TextField fx:id="keyFileField" layoutX="24.0" layoutY="86.0" prefWidth="200.0" />
-        <Button fx:id="encryptButton" layoutX="159.0" layoutY="138.0" mnemonicParsing="false" onAction="#encrypt" text="Encrypt" />
-        <Button fx:id="viewPathButton" layoutX="239.0" layoutY="30.0" mnemonicParsing="false" onAction="#viewPath" text="View" />
-        <Button fx:id="viewKeyFileButton" layoutX="239.0" layoutY="86.0" mnemonicParsing="false" onAction="#viewKeyFile" text="View" />
-        <Button fx:id="decryptButton" layoutX="223.0" layoutY="138.0" mnemonicParsing="false" onAction="#decrypt" text="Decrypt" />
+        <Label layoutX="20.0" layoutY="35.0" text="Path:" />
+        <Label layoutX="20.0" layoutY="85.0" text="Keyfile:" />
+        <TextField fx:id="pathField" layoutX="20.0" layoutY="55.0" prefWidth="200.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="80.0" />
+        <TextField fx:id="keyFileField" layoutX="24.0" layoutY="105.0" prefWidth="200.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="80.0" />
+        <Button fx:id="encryptButton" layoutX="160.0" layoutY="140.0" mnemonicParsing="false" onAction="#encrypt" text="Encrypt" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="90.0" />
+        <Button fx:id="viewPathButton" layoutX="240.0" layoutY="55.0" mnemonicParsing="false" onAction="#viewPath" text="View" AnchorPane.rightAnchor="20.0" />
+        <Button fx:id="viewKeyFileButton" layoutX="240.0" layoutY="105.0" mnemonicParsing="false" onAction="#viewKeyFile" text="View" AnchorPane.rightAnchor="20.0" />
+        <Button fx:id="decryptButton" layoutX="220.0" layoutY="140.0" minWidth="-Infinity" mnemonicParsing="false" onAction="#decrypt" text="Decrypt" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="20.0" />
+      <TextArea fx:id="infConsole" editable="false" layoutX="20.0" layoutY="120.0" prefHeight="34.0" prefWidth="296.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="150.0" />
+      <MenuBar layoutX="34.0" layoutY="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem fx:id="settingsMenuItem" mnemonicParsing="false" onAction="#settingsMenuItem" text="Settings" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
     </children>
 </AnchorPane>

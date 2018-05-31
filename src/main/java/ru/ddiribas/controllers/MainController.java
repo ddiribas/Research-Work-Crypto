@@ -2,6 +2,7 @@ package ru.ddiribas.controllers;
 
 import javafx.fxml.*;
 import javafx.scene.*;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.*;
 import javafx.event.ActionEvent;
@@ -9,26 +10,30 @@ import javafx.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 import ru.ddiribas.Encryption.EncryptionPerformer;
+import ru.ddiribas.Encryption.FileDecryptor;
+import ru.ddiribas.Encryption.FileEncryptor;
 import ru.ddiribas.MainApp;
 
 public class MainController {
 
     MainApp mainApp;
-    Parent parentWarning;
+    Parent parentModal;
     FXMLLoader fxmlLoader;
     WarningController warningController;
-    Stage warningStage;
+    SettingsController settingsController;
+    Stage modalStage;
 
     File src, dst, keyFile;
+    boolean integrityControl = true, deleteOriginal = true;
 
     @FXML
     TextField pathField;
     @FXML
     TextField keyFileField;
+    @FXML
+    TextArea infConsole;
 
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
@@ -38,17 +43,18 @@ public class MainController {
         try {
             fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(getClass().getResource("/fxml/warningWindow.fxml"));
-            parentWarning = fxmlLoader.load();
+            parentModal = fxmlLoader.load();
             warningController = fxmlLoader.getController();
             warningController.setParent(this);
             warningController.setLabel(label);
 
-            warningStage = new Stage();
-            warningStage.initModality(Modality.WINDOW_MODAL);
-            warningStage.initOwner(mainApp.getMainWindow());
-            warningStage.setTitle("Error");
-            warningStage.setScene(new Scene(parentWarning));
-            warningStage.show();
+            modalStage = new Stage();
+            modalStage.initModality(Modality.WINDOW_MODAL);
+            modalStage.initOwner(mainApp.getMainWindow());
+            modalStage.setTitle("Error");
+            modalStage.setScene(new Scene(parentModal));
+            modalStage.setResizable(false);
+            modalStage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -59,7 +65,8 @@ public class MainController {
         dst = src;
         keyFile = new File(keyFileField.getText());
         try {
-            EncryptionPerformer.performEncryption(src, src, keyFile);
+            FileEncryptor encryptor = FileEncryptor.getEncryptor(deleteOriginal, integrityControl);
+            infConsole.appendText(EncryptionPerformer.performEncryption(src, dst, keyFile, encryptor) + "\n");
         } catch (FileNotFoundException e) {
             showWarningWindow(e.getLocalizedMessage());
         }
@@ -70,7 +77,8 @@ public class MainController {
         dst = src;
         keyFile = new File(keyFileField.getText());
         try {
-            EncryptionPerformer.performDecryption(src, src, keyFile);
+            FileDecryptor decryptor = FileDecryptor.getDecryptor(deleteOriginal, integrityControl);
+            infConsole.appendText(EncryptionPerformer.performDecryption(src, dst, keyFile, decryptor) + "\n");
         } catch (FileNotFoundException e) {
             showWarningWindow(e.getLocalizedMessage());
         }
@@ -88,6 +96,24 @@ public class MainController {
         keyFileField.setText(fileChooser.showOpenDialog(((Node)actionEvent.getSource()).getScene().getWindow()).getAbsolutePath());
     }
 
+    public void settingsMenuItem(ActionEvent actionEvent) {
+        try {
+            fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(getClass().getResource("/fxml/settingsWindow.fxml"));
+            parentModal = fxmlLoader.load();
+            settingsController = fxmlLoader.getController();
+            settingsController.setParent(this);
+            settingsController.setInitial(deleteOriginal, integrityControl);
 
-
+            modalStage = new Stage();
+            modalStage.initModality(Modality.WINDOW_MODAL);
+            modalStage.initOwner(mainApp.getMainWindow());
+            modalStage.setTitle("Settings");
+            modalStage.setScene(new Scene(parentModal));
+            modalStage.setResizable(false);
+            modalStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

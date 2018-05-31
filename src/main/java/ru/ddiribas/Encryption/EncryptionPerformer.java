@@ -6,8 +6,7 @@ import java.io.*;
 import java.security.NoSuchAlgorithmException;
 
 public class EncryptionPerformer {
-    public static void performEncryption(File src, File dst, File keyFile) throws FileNotFoundException {
-        byte[] key = new byte[32];
+    public static String performEncryption(File src, File dst, File keyFile, FileEncryptor encryptor) throws FileNotFoundException {
 
         if (!src.exists() || src == null) {
             throw new FileNotFoundException("Invalid source path");
@@ -16,6 +15,9 @@ public class EncryptionPerformer {
         if (!dst.isDirectory() || dst == null) {
             throw new FileNotFoundException("Invalid destination path");
         }
+
+        StringBuilder information = new StringBuilder();
+        byte[] key = new byte[32];
 
         //If keyfile is not specified, create a new one
         try (InputStream is = new FileInputStream(keyFile)) {
@@ -37,13 +39,15 @@ public class EncryptionPerformer {
                 e.printStackTrace();
             }
         }
+
         //Encrypting
-        System.out.println("Encrypting...");
-        FileEncryptor encryptor = FileEncryptor.getEncryptor(true);
+        information.append("Encrypting..." + "\n");
         encryptor.encrypt(src, dst, key);
-        System.out.println(encryptor.counter + " files are encrypted");
+
+        information.append(encryptor.counter + " files are encrypted");
+        return information.toString();
     }
-    public static void performDecryption(File src, File dst, File keyFile) throws FileNotFoundException {
+    public static String performDecryption(File src, File dst, File keyFile, FileDecryptor decryptor) throws FileNotFoundException {
 
         if (!src.exists() || src == null) {
             throw new FileNotFoundException("Invalid source path");
@@ -55,15 +59,21 @@ public class EncryptionPerformer {
         if (!keyFile.exists() || keyFile == null) {
             throw new FileNotFoundException("Invalid keyfile");
         }
+
+        StringBuilder information = new StringBuilder();
         byte[] key = new byte[32];
+
         try (InputStream is = new FileInputStream(keyFile)) {
             is.read(key);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Decrypting...");
-        FileDecryptor decryptor = FileDecryptor.getDecryptor(true);
+
+        //Decrypting
+        information.append("Decrypting..." + "\n");
         decryptor.decrypt(src, dst, key);
-        System.out.println(decryptor.counter + " files are decrypted");
+
+        information.append(decryptor.counter + " files are decrypted");
+        return information.toString();
     }
 }

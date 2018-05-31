@@ -2,13 +2,9 @@ package ru.ddiribas.controllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-
-import java.net.URL;
-import java.util.ResourceBundle;
 
 public class WarningController {
 
@@ -31,6 +27,6 @@ public class WarningController {
     public Button okButton;
 
     public void closeAction(ActionEvent actionEvent) {
-        parent.warningStage.close();
+        parent.modalStage.close();
     }
 }

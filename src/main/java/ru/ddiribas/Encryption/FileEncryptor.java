@@ -14,14 +14,15 @@ public class FileEncryptor {
 	private static FileEncryptor encryptor = new FileEncryptor();
 
 	private static boolean deleteOriginal;
-
-	int counter = 0;
+	private static boolean integrityControl;
+	static int counter;
 	
 	private FileEncryptor() {}
+	public static FileEncryptor getEncryptor(boolean deleteOriginal, boolean integrityControl) {
+		FileEncryptor.deleteOriginal = deleteOriginal;
+		FileEncryptor.integrityControl = integrityControl;
+		counter = 0;
 
-	public static FileEncryptor getEncryptor(boolean originalFileDeleted) {
-		deleteOriginal = originalFileDeleted;
-		
 		return encryptor;
 	}
 

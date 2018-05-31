@@ -10,17 +10,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class FileDecryptor {
-	private static FileDecryptor decrypter = new FileDecryptor();
+	private static FileDecryptor decryptor = new FileDecryptor();
 
 	private static boolean deleteOriginal;
-
-	int counter = 0;
+	private static boolean integrityControl;
+	static int counter;
 
 	private FileDecryptor() {}
+	public static FileDecryptor getDecryptor(boolean deleteOriginal, boolean integrityControl) {
+		FileDecryptor.deleteOriginal = deleteOriginal;
+		FileDecryptor.integrityControl = integrityControl;
+		counter = 0;
 
-	public static FileDecryptor getDecryptor(boolean originalFileDeleted) {
-		deleteOriginal = originalFileDeleted;
-		return decrypter;
+		return decryptor;
 	}
 	
 	public void decrypt(File src, File dst, byte[] key) {
