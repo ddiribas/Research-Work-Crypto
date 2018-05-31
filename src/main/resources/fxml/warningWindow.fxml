@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="80.0" prefWidth="258.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.ddiribas.controllers.WarningController">
+   <children>
+      <Label fx:id="warningLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="41.0" layoutY="10.0" prefHeight="29.0" prefWidth="185.0" textAlignment="CENTER">
+         <font>
+            <Font size="13.0" />
+         </font></Label>
+      <Button fx:id="okButton" contentDisplay="CENTER" layoutX="103.0" layoutY="44.0" mnemonicParsing="false" onAction="#closeAction" prefHeight="25.0" prefWidth="62.0" text="Ок" />
+   </children>
+</AnchorPane>
