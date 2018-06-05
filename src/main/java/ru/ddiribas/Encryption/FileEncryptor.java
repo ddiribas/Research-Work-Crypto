@@ -8,6 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Random;
 
 public class FileEncryptor {
@@ -16,34 +21,68 @@ public class FileEncryptor {
 	private static boolean deleteOriginal;
 	private static boolean integrityControl;
 	static int counter;
-	
+	static int ignoredCounter;
+
 	private FileEncryptor() {}
 	public static FileEncryptor getEncryptor(boolean deleteOriginal, boolean integrityControl) {
 		FileEncryptor.deleteOriginal = deleteOriginal;
 		FileEncryptor.integrityControl = integrityControl;
 		counter = 0;
+		ignoredCounter = 0;
 
 		return encryptor;
 	}
 
-	public void encrypt(File src, File dst, byte[] key) {
-		if (src.isFile()) {
-			if (!src.getName().substring(src.getName().lastIndexOf(".")+1).equals("ddiribas")) {
-				counter++;
-				copyEncrypted(src, dst, key);
-				if(deleteOriginal) src.delete();
-			} else {
-				System.out.println("File is already encrypted");
-			}
-		} else {
-//			File file = new File(src.getParent() + "/" + Base64.encode(encryptBytes(src.getName().getBytes("UTF-8"), key)));
-//			src.renameTo(file);
-//			src = file;
-			File[] files = src.listFiles();
+	public void encrypt(final File src, final File dst, final byte[] key) {
+//		if (src.isFile()) {
+//			if (!src.getName().substring(src.getName().lastIndexOf(".")+1).equals("ddiribas")) {
+//				counter++;
+//				copyEncrypted(src, dst, key);
+//				if(deleteOriginal) src.delete();
+//			} else {
+//				ignoredCounter++;
+//			}
+//		} else {
+////			File file = new File(src.getParent() + "/" + Base64.encode(encryptBytes(src.getName().getBytes("UTF-8"), key)));
+////			src.renameTo(file);
+////			src = file;
+//			File[] files = src.listFiles();
+//
+//			for (File f : files) {
+//				encrypt(f, src, key);
+//			}
+//		}
+		try {
+			Files.walkFileTree(src.toPath(), new FileVisitor<Path>() {
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					return FileVisitResult.CONTINUE;
+				}
 
-			for (File f : files) {
-				encrypt(f, src, key);
-			}
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					if (!file.toFile().getName().substring(file.toFile().getName().lastIndexOf(".")+1).equals("ddiribas")) {
+						counter++;
+						copyEncrypted(file.toFile(), file.getParent().toFile(), key);
+						if(deleteOriginal) file.toFile().delete();
+					} else {
+						ignoredCounter++;
+					}
+					return FileVisitResult.CONTINUE;
+				}
+
+				@Override
+				public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+					return FileVisitResult.CONTINUE;
+				}
+
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

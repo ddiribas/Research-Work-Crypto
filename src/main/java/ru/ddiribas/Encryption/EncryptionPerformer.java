@@ -44,7 +44,7 @@ public class EncryptionPerformer {
         information.append("Encrypting..." + "\n");
         encryptor.encrypt(src, dst, key);
 
-        information.append(encryptor.counter + " files are encrypted");
+        information.append(encryptor.counter + " files are encrypted, " + encryptor.ignoredCounter + " files ignored");
         return information.toString();
     }
     public static String performDecryption(File src, File dst, File keyFile, FileDecryptor decryptor) throws FileNotFoundException {
@@ -73,7 +73,7 @@ public class EncryptionPerformer {
         information.append("Decrypting..." + "\n");
         decryptor.decrypt(src, dst, key);
 
-        information.append(decryptor.counter + " files are decrypted");
+        information.append(decryptor.counter + " files are decrypted, " + decryptor.ignoredCounter + " files ignored");
         return information.toString();
     }
 }

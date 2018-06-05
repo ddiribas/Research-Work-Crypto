@@ -15,12 +15,14 @@ public class FileDecryptor {
 	private static boolean deleteOriginal;
 	private static boolean integrityControl;
 	static int counter;
+	static int ignoredCounter;
 
 	private FileDecryptor() {}
 	public static FileDecryptor getDecryptor(boolean deleteOriginal, boolean integrityControl) {
 		FileDecryptor.deleteOriginal = deleteOriginal;
 		FileDecryptor.integrityControl = integrityControl;
 		counter = 0;
+		ignoredCounter = 0;
 
 		return decryptor;
 	}
@@ -32,7 +34,7 @@ public class FileDecryptor {
             	copyDecrypted(src, dst, key);
                 if (deleteOriginal) src.delete();
             } else {
-                System.out.println("File is not encrypted");
+				ignoredCounter++;
             }
         } else {
 //			src.renameTo(new File(new String(decryptBytes(src.getName().getBytes("UTF-8"), key), "UTF-8")));
