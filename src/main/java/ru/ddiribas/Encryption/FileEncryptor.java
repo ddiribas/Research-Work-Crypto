@@ -2,63 +2,123 @@ package ru.ddiribas.Encryption;
 
 import org.bouncycastle.crypto.InvalidCipherTextException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.Random;
 
 public class FileEncryptor {
 	private static FileEncryptor encryptor = new FileEncryptor();
 
-	private static boolean deleteOriginal;
+	boolean deleteOriginal;
+	boolean integrityControl;
+	File src, dst, keyFile;
+	int counter, ignoredCounter;
 
-	int counter = 0;
-	
 	private FileEncryptor() {}
+	public static FileEncryptor getEncryptor(File src, File dst, File keyFile, boolean deleteOriginal, boolean integrityControl) {
+		encryptor.src = src;
+		encryptor.dst = src;
+		encryptor.keyFile = keyFile;
+		encryptor.deleteOriginal = deleteOriginal;
+		encryptor.integrityControl = integrityControl;
+		encryptor.counter = 0;
+		encryptor.ignoredCounter = 0;
 
-	public static FileEncryptor getEncryptor(boolean originalFileDeleted) {
-		deleteOriginal = originalFileDeleted;
-		
 		return encryptor;
 	}
 
-	public void encrypt(File src, File dst, byte[] key) {
-		if (src.isFile()) {
-			if (!src.getName().substring(src.getName().lastIndexOf(".")+1).equals("ddiribas")) {
-				counter++;
-				copyEncrypted(src, dst, key);
-				if(deleteOriginal) src.delete();
-			} else {
-				System.out.println("File is already encrypted");
+	public void encrypt() throws IOException {
+		final byte[] key = new byte[32];
+//		TODO: rethrow higher
+		try (InputStream is = new FileInputStream(keyFile)) {
+			is.read(key);
+		}
+		Files.walkFileTree(src.toPath(), new FileVisitor<Path>() {
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+				return FileVisitResult.CONTINUE;
 			}
-		} else {
-//			File file = new File(src.getParent() + "/" + Base64.encode(encryptBytes(src.getName().getBytes("UTF-8"), key)));
-//			src.renameTo(file);
-//			src = file;
-			File[] files = src.listFiles();
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+				if (!file.toFile().getName().substring(file.toFile().getName().lastIndexOf(".")+1).equals("ddiribas")) {
+					counter++;
+					copyEncrypted(file.toFile(), file.getParent().toFile(), key);
+					if(deleteOriginal) file.toFile().delete();
+				} else {
+					ignoredCounter++;
+				}
+				return FileVisitResult.CONTINUE;
+			}
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) {
+				return FileVisitResult.CONTINUE;
+			}
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+				return FileVisitResult.CONTINUE;
+			}
+		});
+	}
 
-			for (File f : files) {
-				encrypt(f, src, key);
+	public void copyEncrypted(File src, File dst, byte[] key) {
+		dst = new File(dst.getPath().concat("/").concat(getRandomName(10, "ddiribas")));
+		try (InputStream srcInputStream = new FileInputStream(src); OutputStream dstOutputStream = new FileOutputStream(dst)) {
+			String name = src.getName();
+			dstOutputStream.write(new byte[] { (byte) name.length() });
+			dstOutputStream.write(stringToByte(name));
+
+			byte[] buffer = new byte[srcInputStream.available()];
+			srcInputStream.read(buffer, 0, srcInputStream.available());
+			buffer = encryptBytes(buffer, key);
+			dstOutputStream.write(buffer, 0, buffer.length);
+
+			if (integrityControl) {
+				addHash(name, buffer);
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
-	public void copyEncrypted(File source, File dest, byte[] key) {
+	private void addHash(String name, byte[] buffer) {
+		final File bufferKeyFile = new File(keyFile.getParent(), "buffer.dkey");
+		try (InputStream is = new FileInputStream(keyFile); OutputStream os = new FileOutputStream(bufferKeyFile)) {
+			byte[] byte32 = new byte[32]; byte[] byte64;
+			byte[] nameHash = StribogBouncy.getByteHash256(name.getBytes("UTF-8"));
+			byte[] fileHash = StribogBouncy.getByteHash512(buffer);
+			boolean found = false;
 
-		dest = new File(dest.getPath().concat("/").concat(getRandomName(10, "ddiribas")));
-
-		try (InputStream is = new FileInputStream(source); OutputStream os = new FileOutputStream(dest)) {
-			os.write(new byte[] { (byte) source.getName().length() });
-			os.write(stringToByte(source.getName()));
-
-			byte[] buffer = new byte[is.available()];
-			is.read(buffer, 0, is.available());
-
-			buffer = encryptBytes(buffer, key);
-			os.write(buffer, 0, buffer.length);
+			is.read(byte32); os.write(byte32);
+			while (is.available() > 0) {
+				byte32 = new byte[32]; byte64 = new byte[64];
+				is.read(byte32); os.write(byte32);
+				if (Arrays.equals(byte32, nameHash)) {
+					is.skip(64); os.write(fileHash);
+					found = true;
+				} else {
+					is.read(byte64); os.write(byte64);
+				}
+			}
+			if (!found) {
+				os.write(nameHash); os.write(fileHash);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try (InputStream is = new FileInputStream(bufferKeyFile) {
+			@Override
+			public void close() throws IOException {
+				super.close();
+				bufferKeyFile.delete();
+			}
+		}; OutputStream os = new FileOutputStream(keyFile)) {
+			byte[] keyBuffer = new byte[is.available()];
+			is.read(keyBuffer); os.write(keyBuffer);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -109,32 +169,5 @@ public class FileEncryptor {
 		res.append(".").append(extend);
 
 		return res.toString();
-	}
-
-	public void copy(File source, File dest) throws IOException {
-		InputStream is = null;
-		OutputStream os = null;
-
-		try {
-			dest = new File(dest.getPath().concat("/").concat(source.getName()));
-
-			is = new FileInputStream(source);
-			os = new FileOutputStream(dest);
-
-			byte[] buffer = new byte[1024];
-
-			int length;
-			int tl = 0;
-
-			while ((length = is.read(buffer)) > 0) {
-				tl += length;
-				os.write(buffer, 0, length);
-			}
-
-			System.out.println(tl + " bytes");
-		} finally {
-			is.close();
-			os.close();
-		}
 	}
 }
