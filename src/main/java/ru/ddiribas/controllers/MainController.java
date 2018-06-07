@@ -14,6 +14,7 @@ import java.io.IOException;
 import ru.ddiribas.Encryption.EncryptionPerformer;
 import ru.ddiribas.Encryption.FileDecryptor;
 import ru.ddiribas.Encryption.FileEncryptor;
+import ru.ddiribas.Encryption.IntegrityException;
 import ru.ddiribas.MainApp;
 
 public class MainController {
@@ -65,10 +66,12 @@ public class MainController {
         dst = src;
         keyFile = new File(keyFileField.getText());
         try {
-            FileEncryptor encryptor = FileEncryptor.getEncryptor(deleteOriginal, integrityControl);
-            infConsole.appendText(EncryptionPerformer.performEncryption(src, dst, keyFile, encryptor) + "\n");
+            FileEncryptor encryptor = FileEncryptor.getEncryptor(src, dst, keyFile, deleteOriginal, integrityControl);
+            infConsole.appendText(EncryptionPerformer.performEncryption(encryptor) + "\n");
         } catch (FileNotFoundException e) {
             showWarningWindow(e.getLocalizedMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -77,10 +80,14 @@ public class MainController {
         dst = src;
         keyFile = new File(keyFileField.getText());
         try {
-            FileDecryptor decryptor = FileDecryptor.getDecryptor(deleteOriginal, integrityControl);
-            infConsole.appendText(EncryptionPerformer.performDecryption(src, dst, keyFile, decryptor) + "\n");
+            FileDecryptor decryptor = FileDecryptor.getDecryptor(src, dst, keyFile, deleteOriginal, integrityControl);
+            infConsole.appendText(EncryptionPerformer.performDecryption(decryptor) + "\n");
         } catch (FileNotFoundException e) {
             showWarningWindow(e.getLocalizedMessage());
+        } catch (IntegrityException e) {
+            infConsole.appendText(e.getLocalizedMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

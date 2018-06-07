@@ -6,64 +6,61 @@ import java.io.*;
 import java.security.NoSuchAlgorithmException;
 
 public class EncryptionPerformer {
-    public static String performEncryption(File src, File dst, File keyFile, FileEncryptor encryptor) throws FileNotFoundException {
-
-        if (!src.exists() || src == null) {
+    public static String performEncryption(FileEncryptor encryptor) throws IOException {
+        if (!encryptor.src.exists()) {
             throw new FileNotFoundException("Invalid source path");
         }
-        dst.mkdir();
-        if (!dst.isDirectory() || dst == null) {
+        encryptor.dst.mkdir();
+        if (!encryptor.dst.isDirectory()) {
             throw new FileNotFoundException("Invalid destination path");
         }
-
-        StringBuilder information = new StringBuilder();
-        byte[] key = new byte[32];
-
         //If keyfile is not specified, create a new one
-        try (InputStream is = new FileInputStream(keyFile)) {
-            is.read(key);
-        } catch (IOException e) {
-            keyFile = new File(src.getParent(), "KeyFile.dkey");
-            KeyGenerator kg = null;
+        if (!encryptor.keyFile.exists()) {
+            //New file
+        	encryptor.keyFile = new File(encryptor.src.getParent(), "KeyFile.dkey");
+            //Generate key
+        	KeyGenerator kg = null;
             try {
                 kg = KeyGenerator.getInstance("AES");
-            } catch (NoSuchAlgorithmException ee) {
+            } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
             kg.init(256);
             SecretKey sk = kg.generateKey();
+            byte[] key = new byte[32];
             key = sk.getEncoded();
-            try (OutputStream os = new FileOutputStream(keyFile)) {
+            //Write key
+            try (OutputStream os = new FileOutputStream(encryptor.keyFile)) {
                 os.write(key);
-            } catch (IOException ee) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
         //Encrypting
+        StringBuilder information = new StringBuilder();
         information.append("Encrypting..." + "\n");
-        encryptor.encrypt(src, dst, key);
+        encryptor.encrypt();
 
-        information.append(encryptor.counter + " files are encrypted, " + encryptor.ignoredCounter + " files ignored");
+        information.append(encryptor.counter).append(" files are encrypted, ").append(encryptor.ignoredCounter).append(" files ignored");
         return information.toString();
     }
-    public static String performDecryption(File src, File dst, File keyFile, FileDecryptor decryptor) throws FileNotFoundException {
+    public static String performDecryption(FileDecryptor decryptor) throws IOException, IntegrityException {
 
-        if (!src.exists() || src == null) {
+        if (!decryptor.src.exists()) {
             throw new FileNotFoundException("Invalid source path");
         }
-        dst.mkdir();
-        if (!dst.isDirectory() || dst == null) {
+        decryptor.dst.mkdir();
+        if (!decryptor.dst.isDirectory()) {
             throw new FileNotFoundException("Invalid destination path");
         }
-        if (!keyFile.exists() || keyFile == null) {
+        if (!decryptor.keyFile.exists()) {
             throw new FileNotFoundException("Invalid keyfile");
         }
 
         StringBuilder information = new StringBuilder();
         byte[] key = new byte[32];
 
-        try (InputStream is = new FileInputStream(keyFile)) {
+        try (InputStream is = new FileInputStream(decryptor.keyFile)) {
             is.read(key);
         } catch (IOException e) {
             e.printStackTrace();
@@ -71,9 +68,9 @@ public class EncryptionPerformer {
 
         //Decrypting
         information.append("Decrypting..." + "\n");
-        decryptor.decrypt(src, dst, key);
+        decryptor.decrypt();
 
-        information.append(decryptor.counter + " files are decrypted, " + decryptor.ignoredCounter + " files ignored");
+        information.append(decryptor.counter).append(" files are decrypted, ").append(decryptor.ignoredCounter).append(" files ignored");
         return information.toString();
     }
 }

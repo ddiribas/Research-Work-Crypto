@@ -5,16 +5,22 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import ru.ddiribas.controllers.MainController;
 
 import java.io.IOException;
+import java.security.Security;
 
 public class MainApp extends Application {
 
     private Stage mainWindow;
-
     public Stage getMainWindow() {
         return mainWindow;
+    }
+
+    private static MainController mainController;
+    public static MainController getMainController() {
+        return mainController;
     }
 
     public static void main(String[] args) {
@@ -38,8 +44,8 @@ public class MainApp extends Application {
             //Set scene containing the main window
             mainWindow.setScene(new Scene(root));
             // Give the controller access to the main application
-            MainController controller = loader.getController();
-            controller.setMainApp(this);
+            mainController = loader.getController();
+            mainController.setMainApp(this);
 
             mainWindow.show();
         } catch (IOException e) {
