@@ -33,11 +33,12 @@ public class FileEncryptor {
 	}
 
 	public void encrypt() throws IOException {
-		final byte[] key = new byte[32];
+		byte[] key = new byte[32];
 //		TODO: rethrow higher
 		try (InputStream is = new FileInputStream(keyFile)) {
 			is.read(key);
 		}
+		final byte[] finalKey = FingerPrinter.addFingerPrint(key);
 		Files.walkFileTree(src.toPath(), new FileVisitor<Path>() {
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
@@ -47,7 +48,7 @@ public class FileEncryptor {
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
 				if (!file.toFile().getName().substring(file.toFile().getName().lastIndexOf(".")+1).equals("ddiribas")) {
 					counter++;
-					copyEncrypted(file.toFile(), file.getParent().toFile(), key);
+					copyEncrypted(file.toFile(), file.getParent().toFile(), finalKey);
 					if(deleteOriginal) file.toFile().delete();
 				} else {
 					ignoredCounter++;

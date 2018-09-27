@@ -5,6 +5,8 @@ import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.GOST3412_2015Engine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
+import org.bouncycastle.crypto.modes.G3413CFBBlockCipher;
+import org.bouncycastle.crypto.modes.G3413CTRBlockCipher;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -15,7 +17,7 @@ import java.util.Arrays;
 
 public class KuznechikBouncy {
 
-    private final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new GOST3412_2015Engine()), new PKCS7Padding());
+    private final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new G3413CFBBlockCipher(new GOST3412_2015Engine()), new PKCS7Padding());
     private final SecureRandom random = new SecureRandom();
     private KeyParameter key;
 
@@ -60,6 +62,5 @@ public class KuznechikBouncy {
         outputLength += cipher.doFinal(output, outputLength);
 
         return Arrays.copyOf(output, outputLength);
-
     }
 }
