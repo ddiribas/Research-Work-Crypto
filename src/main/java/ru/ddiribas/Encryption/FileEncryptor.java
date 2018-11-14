@@ -1,44 +1,54 @@
 package ru.ddiribas.Encryption;
 
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.util.encoders.Base64;
 
 import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.Random;
 
 public class FileEncryptor {
 	private static FileEncryptor encryptor = new FileEncryptor();
 
-	boolean deleteOriginal;
-	boolean integrityControl;
+	private boolean deleteOriginal;
+	private boolean integrityControl;
+	private boolean fingerPrint;
+	private boolean encryptName;
 	File src, dst, keyFile;
 	int counter, ignoredCounter;
 
 	private FileEncryptor() {}
-	public static FileEncryptor getEncryptor(File src, File dst, File keyFile, boolean deleteOriginal, boolean integrityControl) {
+	public static FileEncryptor getEncryptor(File src, File dst, File keyFile, boolean deleteOriginal, boolean integrityControl, boolean fingerPrint, boolean encryptName) {
 		encryptor.src = src;
-		encryptor.dst = src;
+		encryptor.dst = dst;
 		encryptor.keyFile = keyFile;
 		encryptor.deleteOriginal = deleteOriginal;
 		encryptor.integrityControl = integrityControl;
+		encryptor.fingerPrint = fingerPrint;
+		encryptor.encryptName = encryptName;
 		encryptor.counter = 0;
 		encryptor.ignoredCounter = 0;
 
 		return encryptor;
 	}
 
-	public void encrypt() throws IOException {
+	void encrypt() throws IOException {
 		byte[] key = new byte[32];
-//		TODO: rethrow higher
+		final byte[] finalKey;
 		try (InputStream is = new FileInputStream(keyFile)) {
 			is.read(key);
 		}
-		final byte[] finalKey = FingerPrinter.addFingerPrint(key);
+		if (fingerPrint)
+			finalKey = FingerPrintAuthenticator.addFingerPrint(key);
+		else
+			finalKey = key;
+
 		Files.walkFileTree(src.toPath(), new FileVisitor<Path>() {
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
@@ -49,7 +59,7 @@ public class FileEncryptor {
 				if (!file.toFile().getName().substring(file.toFile().getName().lastIndexOf(".")+1).equals("ddiribas")) {
 					counter++;
 					copyEncrypted(file.toFile(), file.getParent().toFile(), finalKey);
-					if(deleteOriginal) file.toFile().delete();
+					if (deleteOriginal) file.toFile().delete();
 				} else {
 					ignoredCounter++;
 				}
@@ -66,12 +76,17 @@ public class FileEncryptor {
 		});
 	}
 
-	public void copyEncrypted(File src, File dst, byte[] key) {
-		dst = new File(dst.getPath().concat("/").concat(getRandomName(10, "ddiribas")));
+	private void copyEncrypted(File src, File dst, byte[] key) {
+		if (encryptName) {
+			try {
+				dst = new File(dst.getPath(), encryptFileName(src.getName(), key));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		} else dst = new File (dst.getPath(), src.getName() + ".ddiribas");
 		try (InputStream srcInputStream = new FileInputStream(src); OutputStream dstOutputStream = new FileOutputStream(dst)) {
-			String name = src.getName();
-			dstOutputStream.write(new byte[] { (byte) name.length() });
-			dstOutputStream.write(stringToByte(name));
+			String name = dst.getName();
+			System.out.println(name);
 
 			byte[] buffer = new byte[srcInputStream.available()];
 			srcInputStream.read(buffer, 0, srcInputStream.available());
@@ -90,7 +105,7 @@ public class FileEncryptor {
 		final File bufferKeyFile = new File(keyFile.getParent(), "buffer.dkey");
 		try (InputStream is = new FileInputStream(keyFile); OutputStream os = new FileOutputStream(bufferKeyFile)) {
 			byte[] byte32 = new byte[32]; byte[] byte64;
-			byte[] nameHash = StribogBouncy.getByteHash256(name.getBytes("UTF-8"));
+			byte[] nameHash = StribogBouncy.getByteHash256(name.getBytes(StandardCharsets.UTF_8));
 			byte[] fileHash = StribogBouncy.getByteHash512(buffer);
 			boolean found = false;
 
@@ -135,40 +150,13 @@ public class FileEncryptor {
         return data;
     }
 
-	public byte[] stringToByte(String data) {
-		char[] ca = data.toCharArray();
-		byte[] res = new byte[ca.length * 2]; // Character.BYTES = 2;
-
-		for (int i = 0; i < res.length; i++) {
-			res[i] = (byte) ((ca[i / 2] >> (8 - (i % 2) * 8)) & 0xff);
-		}
-
-		return res;
+    private String encryptFileName(String fileName, byte[] key) throws UnsupportedEncodingException {
+//		System.out.println(fileName);
+		fileName = Base64.toBase64String(encryptBytes(fileName.getBytes(), key));
+//		System.out.println(fileName);
+		fileName = URLEncoder.encode(fileName, "UTF-8");
+//		System.out.println(fileName);
+		return fileName + ".ddiribas";
 	}
 
-	public String getRandomName(int length, String extend) {
-		Random r = new Random();
-		StringBuilder res = new StringBuilder();
-
-		for (int i = 0; i < length; i++) {
-
-			char c = 'a';
-			int width = 'z' - 'a';
-
-			if (r.nextInt(3) == 0) {
-				c = 'A';
-				width = 'Z' - 'A';
-			}
-			if (r.nextInt(3) == 1) {
-				c = '0';
-				width = '9' - '0';
-			}
-
-			res.append((char) (c + r.nextInt(width)));
-		}
-
-		res.append(".").append(extend);
-
-		return res.toString();
-	}
 }

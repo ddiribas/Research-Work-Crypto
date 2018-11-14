@@ -5,7 +5,7 @@ import oshi.hardware.*;
 import oshi.software.os.OperatingSystem;
 import oshi.util.FormatUtil;
 
-public class FingerPrinter {
+public class FingerPrintAuthenticator {
 	public static byte[] addFingerPrint(byte[] input) {
 		SystemInfo systemInfo = new SystemInfo();
 		OperatingSystem operatingSystem = systemInfo.getOperatingSystem();

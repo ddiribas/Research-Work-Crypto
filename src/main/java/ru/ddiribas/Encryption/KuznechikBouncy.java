@@ -48,7 +48,6 @@ public class KuznechikBouncy {
             inputOffset += blockSize;
             inputLength -= blockSize;
         }
-
         cipher.init(encrypt, new ParametersWithIV(key, iv));
         byte[] output = new byte[cipher.getOutputSize(inputLength) + outputOffset];
 

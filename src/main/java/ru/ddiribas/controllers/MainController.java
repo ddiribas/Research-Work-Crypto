@@ -19,15 +19,16 @@ import ru.ddiribas.MainApp;
 
 public class MainController {
 
-    MainApp mainApp;
-    Parent parentModal;
-    FXMLLoader fxmlLoader;
-    WarningController warningController;
-    SettingsController settingsController;
+    private MainApp mainApp;
+    private Parent parentModal;
+    private FXMLLoader fxmlLoader;
+    private ErrorController errorController;
+    private WarningController warningController;
+    private SettingsController settingsController;
     Stage modalStage;
 
-    File src, dst, keyFile;
-    boolean integrityControl = true, deleteOriginal = true;
+    private File src, dst, keyFile;
+    boolean integrityControl = true, deleteOriginal = true, fingerPrint = true, encryptName = true;
 
     @FXML
     TextField pathField;
@@ -40,14 +41,17 @@ public class MainController {
         this.mainApp = mainApp;
     }
 
-    public void showWarningWindow(String label) {
+    public WarningController getWarningController() {
+        return warningController;
+    }
+    private void showErrorWindow(String label) {
         try {
             fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(getClass().getResource("/fxml/warningWindow.fxml"));
+            fxmlLoader.setLocation(getClass().getResource("/fxml/errorWindow.fxml"));
             parentModal = fxmlLoader.load();
-            warningController = fxmlLoader.getController();
-            warningController.setParent(this);
-            warningController.setLabel(label);
+            errorController = fxmlLoader.getController();
+            errorController.setParent(this);
+            errorController.setLabel(label);
 
             modalStage = new Stage();
             modalStage.initModality(Modality.WINDOW_MODAL);
@@ -61,15 +65,42 @@ public class MainController {
         }
     }
 
+    public void showWarningWindow (String label) {
+        try {
+            fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(getClass().getResource("/fxml/warningWindow.fxml"));
+            parentModal = fxmlLoader.load();
+            warningController = fxmlLoader.getController();
+            warningController.setParent(this);
+            warningController.setLabel(label);
+            warningController.continueExecution = true;
+
+            modalStage = new Stage();
+            modalStage.initModality(Modality.WINDOW_MODAL);
+            modalStage.initOwner(mainApp.getMainWindow());
+            modalStage.setTitle("Warning");
+            modalStage.setScene(new Scene(parentModal));
+            modalStage.setResizable(false);
+            modalStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*TODO: Разобраться с нестандартными ситуациями:
+    Изменение файла между зашифрованием и расшифрованием
+    В частности нестандартная длина зашифрованного файла (падает, когда часть, отвечающая за данные самого файла, некратна длине блока)
+     */
     public void encrypt(ActionEvent actionEvent) {
         src = new File(pathField.getText());
         dst = src;
         keyFile = new File(keyFileField.getText());
         try {
-            FileEncryptor encryptor = FileEncryptor.getEncryptor(src, dst, keyFile, deleteOriginal, integrityControl);
+            FileEncryptor encryptor = FileEncryptor.getEncryptor(src, dst, keyFile, deleteOriginal, integrityControl, fingerPrint, encryptName);
+            EncryptionPerformer.prepareForEncryption(encryptor);
             infConsole.appendText(EncryptionPerformer.performEncryption(encryptor) + "\n");
         } catch (FileNotFoundException e) {
-            showWarningWindow(e.getLocalizedMessage());
+            showErrorWindow(e.getLocalizedMessage());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -77,13 +108,14 @@ public class MainController {
 
     public void decrypt(ActionEvent actionEvent) {
         src = new File(pathField.getText());
-        dst = src;
+        dst = src; //пока что
         keyFile = new File(keyFileField.getText());
         try {
-            FileDecryptor decryptor = FileDecryptor.getDecryptor(src, dst, keyFile, deleteOriginal, integrityControl);
+            FileDecryptor decryptor = FileDecryptor.getDecryptor(src, dst, keyFile, deleteOriginal, integrityControl, fingerPrint, encryptName);
+            EncryptionPerformer.prepareForDecryption(decryptor);
             infConsole.appendText(EncryptionPerformer.performDecryption(decryptor) + "\n");
         } catch (FileNotFoundException e) {
-            showWarningWindow(e.getLocalizedMessage());
+            showErrorWindow(e.getLocalizedMessage());
         } catch (IntegrityException e) {
             infConsole.appendText(e.getLocalizedMessage());
         } catch (IOException e) {
@@ -110,7 +142,7 @@ public class MainController {
             parentModal = fxmlLoader.load();
             settingsController = fxmlLoader.getController();
             settingsController.setParent(this);
-            settingsController.setInitial(deleteOriginal, integrityControl);
+            settingsController.setInitial(deleteOriginal, integrityControl, fingerPrint, encryptName);
 
             modalStage = new Stage();
             modalStage.initModality(Modality.WINDOW_MODAL);
