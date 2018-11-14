@@ -25,6 +25,7 @@ public class MainController {
     private ErrorController errorController;
     private WarningController warningController;
     private SettingsController settingsController;
+    private PasswordController passwordController;
     Stage modalStage;
 
     private File src, dst, keyFile;
@@ -44,6 +45,7 @@ public class MainController {
     public WarningController getWarningController() {
         return warningController;
     }
+
     private void showErrorWindow(String label) {
         try {
             fxmlLoader = new FXMLLoader();
@@ -60,6 +62,26 @@ public class MainController {
             modalStage.setScene(new Scene(parentModal));
             modalStage.setResizable(false);
             modalStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public byte[] requestPassword() {
+        try {
+            fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(getClass().getResource("/fxml/passwordRequest.fxml"));
+            parentModal = fxmlLoader.load();
+            passwordController = fxmlLoader.getController();
+            passwordController.setParent(this);
+
+            modalStage = new Stage();
+            modalStage.initModality(Modality.WINDOW_MODAL);
+            modalStage.initOwner(mainApp.getMainWindow());
+            modalStage.setTitle("Enter the password");
+            modalStage.setScene(new Scene(parentModal));
+            modalStage.setResizable(false);
+            modalStage.
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -20,7 +20,7 @@ public class FileEncryptor {
 	private boolean integrityControl;
 	private boolean fingerPrint;
 	private boolean encryptName;
-	File src, dst, keyFile;
+	private File src, dst, keyFile;
 	int counter, ignoredCounter;
 
 	private FileEncryptor() {}

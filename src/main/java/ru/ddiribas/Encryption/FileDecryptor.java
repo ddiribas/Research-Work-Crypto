@@ -87,22 +87,6 @@ public class FileDecryptor {
 			hashNotFoundFiles.clear();
 			throw new IntegrityException(tempIFF, tempHNFF);
 		}
-//		if (src.isFile()) {
-//            if (src.getName().substring(src.getName().lastIndexOf(".")+1).equals("ddiribas")) {
-//                counter++;
-//            	copyDecrypted(src, dst, key);
-//                if (deleteOriginal) src.delete();
-//            } else {
-//				ignoredCounter++;
-//            }
-//        } else {
-////			src.renameTo(new File(new String(decryptBytes(src.getName().getBytes("UTF-8"), key), "UTF-8")));
-//            File[] files = src.listFiles();
-//
-//            for (File f : files) {
-//                decrypt(f, src, key);
-//            }
-//        }
 	}
 
 	private void copyDecrypted(File src, File dst, byte[] key) {
