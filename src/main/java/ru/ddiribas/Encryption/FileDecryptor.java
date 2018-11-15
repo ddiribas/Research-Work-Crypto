@@ -22,6 +22,7 @@ public class FileDecryptor {
 	private boolean integrityControl;
 	private boolean fingerPrint;
 	private boolean encryptName;
+	private boolean passwordAuth;
 
 	File src, dst, keyFile;
 	int counter, ignoredCounter;
@@ -29,7 +30,7 @@ public class FileDecryptor {
 	private List<File> hashNotFoundFiles = new LinkedList<>();
 
 	private FileDecryptor() {}
-	public static FileDecryptor getDecryptor(File src, File dst, File keyFile, boolean deleteOriginal, boolean integrityControl, boolean fingerPrint, boolean encryptName) {
+	public static FileDecryptor getDecryptor(File src, File dst, File keyFile, boolean deleteOriginal, boolean integrityControl, boolean fingerPrint, boolean encryptName, boolean passwordAuth) {
 		decryptor.src = src;
 		decryptor.dst = dst;
 		decryptor.keyFile = keyFile;
@@ -37,6 +38,7 @@ public class FileDecryptor {
 		decryptor.integrityControl = integrityControl;
 		decryptor.fingerPrint = fingerPrint;
 		decryptor.encryptName = encryptName;
+		decryptor.passwordAuth = passwordAuth;
 		decryptor.counter = 0;
 		decryptor.ignoredCounter = 0;
 
@@ -49,11 +51,11 @@ public class FileDecryptor {
 		try (InputStream is = new FileInputStream(keyFile)) {
 			is.read(key);
 		}
-
 		if (fingerPrint)
-			finalKey = FingerPrintAuthenticator.addFingerPrint(key);
-		else
-			finalKey = key;
+			key = FingerPrintAuthenticator.addFingerPrint(key);
+		if (passwordAuth)
+			key = PasswordAuthenticator.addPasswordPrint(key);
+		finalKey = key;
 
 		Files.walkFileTree(src.toPath(), new FileVisitor<Path>() {
 			@Override
@@ -126,7 +128,6 @@ public class FileDecryptor {
 	}
 
 	private IntegrityCheckResult checkIntegrity(String fileName, byte[] buffer) {
-		System.out.println(fileName);
 		try (InputStream is = new FileInputStream(keyFile)) {
 			byte[] byte32; byte[] byte64;
 			byte[] nameHash = StribogBouncy.getByteHash256(fileName.getBytes(StandardCharsets.UTF_8));

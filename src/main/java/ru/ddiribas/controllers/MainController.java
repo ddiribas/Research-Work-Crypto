@@ -22,14 +22,12 @@ public class MainController {
     private MainApp mainApp;
     private Parent parentModal;
     private FXMLLoader fxmlLoader;
-    private ErrorController errorController;
     private WarningController warningController;
-    private SettingsController settingsController;
-    private PasswordController passwordController;
     Stage modalStage;
 
     private File src, dst, keyFile;
-    boolean integrityControl = true, deleteOriginal = true, fingerPrint = true, encryptName = true;
+    boolean integrityControl = true, deleteOriginal = true, fingerPrint = true, encryptName = true, passwordAuth = true;
+    byte[] passwordHash;
 
     @FXML
     TextField pathField;
@@ -51,7 +49,7 @@ public class MainController {
             fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(getClass().getResource("/fxml/errorWindow.fxml"));
             parentModal = fxmlLoader.load();
-            errorController = fxmlLoader.getController();
+            ErrorController errorController = fxmlLoader.getController();
             errorController.setParent(this);
             errorController.setLabel(label);
 
@@ -72,7 +70,7 @@ public class MainController {
             fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(getClass().getResource("/fxml/passwordRequest.fxml"));
             parentModal = fxmlLoader.load();
-            passwordController = fxmlLoader.getController();
+            PasswordController passwordController = fxmlLoader.getController();
             passwordController.setParent(this);
 
             modalStage = new Stage();
@@ -81,10 +79,11 @@ public class MainController {
             modalStage.setTitle("Enter the password");
             modalStage.setScene(new Scene(parentModal));
             modalStage.setResizable(false);
-            modalStage.
+            modalStage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return passwordHash;
     }
 
     public void showWarningWindow (String label) {
@@ -118,7 +117,7 @@ public class MainController {
         dst = src;
         keyFile = new File(keyFileField.getText());
         try {
-            FileEncryptor encryptor = FileEncryptor.getEncryptor(src, dst, keyFile, deleteOriginal, integrityControl, fingerPrint, encryptName);
+            FileEncryptor encryptor = FileEncryptor.getEncryptor(src, dst, keyFile, deleteOriginal, integrityControl, fingerPrint, encryptName, passwordAuth);
             EncryptionPerformer.prepareForEncryption(encryptor);
             infConsole.appendText(EncryptionPerformer.performEncryption(encryptor) + "\n");
         } catch (FileNotFoundException e) {
@@ -133,7 +132,7 @@ public class MainController {
         dst = src; //пока что
         keyFile = new File(keyFileField.getText());
         try {
-            FileDecryptor decryptor = FileDecryptor.getDecryptor(src, dst, keyFile, deleteOriginal, integrityControl, fingerPrint, encryptName);
+            FileDecryptor decryptor = FileDecryptor.getDecryptor(src, dst, keyFile, deleteOriginal, integrityControl, fingerPrint, encryptName, passwordAuth);
             EncryptionPerformer.prepareForDecryption(decryptor);
             infConsole.appendText(EncryptionPerformer.performDecryption(decryptor) + "\n");
         } catch (FileNotFoundException e) {
@@ -162,9 +161,9 @@ public class MainController {
             fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(getClass().getResource("/fxml/settingsWindow.fxml"));
             parentModal = fxmlLoader.load();
-            settingsController = fxmlLoader.getController();
+            SettingsController settingsController = fxmlLoader.getController();
             settingsController.setParent(this);
-            settingsController.setInitial(deleteOriginal, integrityControl, fingerPrint, encryptName);
+            settingsController.setInitial(deleteOriginal, integrityControl, fingerPrint, encryptName, passwordAuth);
 
             modalStage = new Stage();
             modalStage.initModality(Modality.WINDOW_MODAL);

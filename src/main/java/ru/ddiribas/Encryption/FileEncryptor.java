@@ -20,11 +20,12 @@ public class FileEncryptor {
 	private boolean integrityControl;
 	private boolean fingerPrint;
 	private boolean encryptName;
-	private File src, dst, keyFile;
+	private boolean passwordAuth;
+	File src, dst, keyFile;
 	int counter, ignoredCounter;
 
 	private FileEncryptor() {}
-	public static FileEncryptor getEncryptor(File src, File dst, File keyFile, boolean deleteOriginal, boolean integrityControl, boolean fingerPrint, boolean encryptName) {
+	public static FileEncryptor getEncryptor(File src, File dst, File keyFile, boolean deleteOriginal, boolean integrityControl, boolean fingerPrint, boolean encryptName, boolean passwordAuth) {
 		encryptor.src = src;
 		encryptor.dst = dst;
 		encryptor.keyFile = keyFile;
@@ -32,6 +33,7 @@ public class FileEncryptor {
 		encryptor.integrityControl = integrityControl;
 		encryptor.fingerPrint = fingerPrint;
 		encryptor.encryptName = encryptName;
+		encryptor.passwordAuth = passwordAuth;
 		encryptor.counter = 0;
 		encryptor.ignoredCounter = 0;
 
@@ -45,9 +47,10 @@ public class FileEncryptor {
 			is.read(key);
 		}
 		if (fingerPrint)
-			finalKey = FingerPrintAuthenticator.addFingerPrint(key);
-		else
-			finalKey = key;
+			key = FingerPrintAuthenticator.addFingerPrint(key);
+		if (passwordAuth)
+			key = PasswordAuthenticator.addPasswordPrint(key);
+		finalKey = key;
 
 		Files.walkFileTree(src.toPath(), new FileVisitor<Path>() {
 			@Override
@@ -86,7 +89,6 @@ public class FileEncryptor {
 		} else dst = new File (dst.getPath(), src.getName() + ".ddiribas");
 		try (InputStream srcInputStream = new FileInputStream(src); OutputStream dstOutputStream = new FileOutputStream(dst)) {
 			String name = dst.getName();
-			System.out.println(name);
 
 			byte[] buffer = new byte[srcInputStream.available()];
 			srcInputStream.read(buffer, 0, srcInputStream.available());

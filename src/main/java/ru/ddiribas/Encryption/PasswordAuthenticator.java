@@ -1,13 +1,11 @@
 package ru.ddiribas.Encryption;
 
+import org.bouncycastle.util.Arrays;
+import ru.ddiribas.MainApp;
+
 public class PasswordAuthenticator {
     public static byte[] addPasswordPrint(byte[] input) {
-        String key = new String(input);
-
-        //TODO: форма для ввода пароля вызывается отсюда
-        StringBuilder result = new StringBuilder();
-        result.append(key);
-        return StribogBouncy.getByteHash256(result.toString().getBytes());
-
+        byte[] result = Arrays.concatenate(input, MainApp.getMainController().requestPassword());
+        return StribogBouncy.getByteHash256(result);
     }
 }

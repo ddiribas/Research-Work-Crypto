@@ -16,16 +16,19 @@ public class SettingsController {
     public CheckBox fingerPrintBox;
     @FXML
     public CheckBox encryptNameBox;
+    @FXML
+    public CheckBox passwordAuthBox;
 
     void setParent(MainController parent) {
         this.parent = parent;
     }
 
-    void setInitial(boolean deleteOriginal, boolean integrityControl, boolean fingerPrint, boolean encryptName) {
+    void setInitial(boolean deleteOriginal, boolean integrityControl, boolean fingerPrint, boolean encryptName, boolean passwordAuth) {
         deleteOriginalBox.setSelected(deleteOriginal);
         integrityControlBox.setSelected(integrityControl);
         fingerPrintBox.setSelected(fingerPrint);
         encryptNameBox.setSelected(encryptName);
+        passwordAuthBox.setSelected(passwordAuth);
     }
 
     public void okButton(ActionEvent actionEvent) {
@@ -33,6 +36,7 @@ public class SettingsController {
         parent.integrityControl = integrityControlBox.isSelected();
         parent.fingerPrint = fingerPrintBox.isSelected();
         parent.encryptName = encryptNameBox.isSelected();
+        parent.passwordAuth = passwordAuthBox.isSelected();
         parent.modalStage.close();
     }
 }

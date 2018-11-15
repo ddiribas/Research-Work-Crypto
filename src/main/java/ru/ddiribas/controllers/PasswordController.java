@@ -7,6 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import ru.ddiribas.Encryption.StribogBouncy;
 
 public class PasswordController {
 	private MainController parent;
@@ -22,8 +23,7 @@ public class PasswordController {
 	public PasswordField passwordField;
 
 	public void okAction(ActionEvent actionEvent) {
-		parent.passwordHash = passwordField.getAccessibleText();
+		parent.passwordHash = StribogBouncy.getByteHash256(passwordField.getText().getBytes());
 		parent.modalStage.close();
-
 	}
 }
