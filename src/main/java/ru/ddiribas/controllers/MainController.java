@@ -2,6 +2,7 @@ package ru.ddiribas.controllers;
 
 import javafx.fxml.*;
 import javafx.scene.*;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.*;
@@ -11,19 +12,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import ru.ddiribas.Encryption.EncryptionPerformer;
-import ru.ddiribas.Encryption.FileDecryptor;
-import ru.ddiribas.Encryption.FileEncryptor;
-import ru.ddiribas.Encryption.IntegrityException;
+import ru.ddiribas.Encryption.*;
 import ru.ddiribas.MainApp;
 
 public class MainController {
 
     private MainApp mainApp;
-    private Parent parentModal;
+    private Parent modalScene;
     private FXMLLoader fxmlLoader;
     private WarningController warningController;
-    Stage modalStage;
 
     private File src, dst, keyFile;
     boolean integrityControl = true, deleteOriginal = true, fingerPrint = true, encryptName = true, passwordAuth = true;
@@ -35,29 +32,41 @@ public class MainController {
     TextField keyFileField;
     @FXML
     TextArea infConsole;
+    @FXML
+    Button encryptButton;
+    @FXML
+    Button decryptButton;
 
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
+    }
+
+    public void init() {
+        encryptButton.defaultButtonProperty().bind(encryptButton.focusedProperty());
+        decryptButton.defaultButtonProperty().bind(decryptButton.focusedProperty());
+        pathField.setText("C:\\Share\\Диплом\\test");
+        keyFileField.setText("C:\\Share\\Диплом\\KeyFile.dkey");
     }
 
     public WarningController getWarningController() {
         return warningController;
     }
 
-    private void showErrorWindow(String label) {
+    public void showErrorWindow(String label) {
         try {
             fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(getClass().getResource("/fxml/errorWindow.fxml"));
-            parentModal = fxmlLoader.load();
+            modalScene = fxmlLoader.load();
+            Stage modalStage = new Stage();
             ErrorController errorController = fxmlLoader.getController();
-            errorController.setParent(this);
+            errorController.setParent(this, modalStage);
             errorController.setLabel(label);
+            errorController.init();
 
-            modalStage = new Stage();
             modalStage.initModality(Modality.WINDOW_MODAL);
             modalStage.initOwner(mainApp.getMainWindow());
             modalStage.setTitle("Error");
-            modalStage.setScene(new Scene(parentModal));
+            modalStage.setScene(new Scene(modalScene));
             modalStage.setResizable(false);
             modalStage.show();
         } catch (IOException e) {
@@ -69,16 +78,17 @@ public class MainController {
         try {
             fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(getClass().getResource("/fxml/passwordRequest.fxml"));
-            parentModal = fxmlLoader.load();
+            modalScene = fxmlLoader.load();
+            Stage modalStage = new Stage();
             PasswordController passwordController = fxmlLoader.getController();
-            passwordController.setParent(this);
+            passwordController.setParent(this, modalStage);
 
-            modalStage = new Stage();
             modalStage.initModality(Modality.WINDOW_MODAL);
             modalStage.initOwner(mainApp.getMainWindow());
             modalStage.setTitle("Enter the password");
-            modalStage.setScene(new Scene(parentModal));
+            modalStage.setScene(new Scene(modalScene));
             modalStage.setResizable(false);
+            passwordController.init();
             modalStage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
@@ -90,17 +100,17 @@ public class MainController {
         try {
             fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(getClass().getResource("/fxml/warningWindow.fxml"));
-            parentModal = fxmlLoader.load();
+            modalScene = fxmlLoader.load();
+            Stage modalStage = new Stage();
             warningController = fxmlLoader.getController();
-            warningController.setParent(this);
+            warningController.setParent(this, modalStage);
             warningController.setLabel(label);
             warningController.continueExecution = true;
 
-            modalStage = new Stage();
             modalStage.initModality(Modality.WINDOW_MODAL);
             modalStage.initOwner(mainApp.getMainWindow());
             modalStage.setTitle("Warning");
-            modalStage.setScene(new Scene(parentModal));
+            modalStage.setScene(new Scene(modalScene));
             modalStage.setResizable(false);
             modalStage.showAndWait();
         } catch (IOException e) {
@@ -124,6 +134,7 @@ public class MainController {
             showErrorWindow(e.getLocalizedMessage());
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (StopOperationException ignored) {
         }
     }
 
@@ -160,16 +171,16 @@ public class MainController {
         try {
             fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(getClass().getResource("/fxml/settingsWindow.fxml"));
-            parentModal = fxmlLoader.load();
+            modalScene = fxmlLoader.load();
+            Stage modalStage = new Stage();
             SettingsController settingsController = fxmlLoader.getController();
-            settingsController.setParent(this);
+            settingsController.setParent(this, modalStage);
             settingsController.setInitial(deleteOriginal, integrityControl, fingerPrint, encryptName, passwordAuth);
 
-            modalStage = new Stage();
             modalStage.initModality(Modality.WINDOW_MODAL);
             modalStage.initOwner(mainApp.getMainWindow());
             modalStage.setTitle("Settings");
-            modalStage.setScene(new Scene(parentModal));
+            modalStage.setScene(new Scene(modalScene));
             modalStage.setResizable(false);
             modalStage.show();
         } catch (IOException e) {

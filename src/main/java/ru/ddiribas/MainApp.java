@@ -46,7 +46,7 @@ public class MainApp extends Application {
             // Give the controller access to the main application
             mainController = loader.getController();
             mainController.setMainApp(this);
-
+            mainController.init();
             mainWindow.show();
         } catch (IOException e) {
             e.printStackTrace();

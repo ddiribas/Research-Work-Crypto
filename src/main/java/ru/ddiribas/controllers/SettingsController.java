@@ -3,10 +3,14 @@ package ru.ddiribas.controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
+import javafx.stage.Stage;
+
+import java.util.Formatter;
 
 public class SettingsController {
 
     private MainController parent;
+    private Stage thisStage;
 
     @FXML
     public CheckBox deleteOriginalBox;
@@ -19,8 +23,9 @@ public class SettingsController {
     @FXML
     public CheckBox passwordAuthBox;
 
-    void setParent(MainController parent) {
+    void setParent(MainController parent, Stage thisStage) {
         this.parent = parent;
+        this.thisStage = thisStage;
     }
 
     void setInitial(boolean deleteOriginal, boolean integrityControl, boolean fingerPrint, boolean encryptName, boolean passwordAuth) {
@@ -37,6 +42,6 @@ public class SettingsController {
         parent.fingerPrint = fingerPrintBox.isSelected();
         parent.encryptName = encryptNameBox.isSelected();
         parent.passwordAuth = passwordAuthBox.isSelected();
-        parent.modalStage.close();
+        thisStage.close();
     }
 }

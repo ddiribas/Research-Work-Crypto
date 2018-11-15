@@ -5,21 +5,25 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.stage.Stage;
+
+import java.util.Formatter;
 
 public class WarningController {
 
-    public MainController parent;
+    private MainController parent;
+    private Stage thisStage;
     public boolean continueExecution;
 
-
-    public void setParent(MainController parent) {
+    void setParent(MainController parent, Stage thisStage) {
         this.parent = parent;
+        this.thisStage = thisStage;
     }
 
     String label = "";
     @FXML
     public Label warningLabel;
-    public void setLabel (String s) {
+    void setLabel(String s) {
         warningLabel.setText(s);
         warningLabel.setAlignment(Pos.BASELINE_CENTER);
     }
@@ -27,14 +31,10 @@ public class WarningController {
     @FXML
     public Button okButton;
 
-    public void closeAction(ActionEvent actionEvent) {
-        parent.modalStage.close();
-    }
-
-    public void okAction(ActionEvent actionEvent) { parent.modalStage.close(); }
+    public void okAction(ActionEvent actionEvent) { thisStage.close(); }
 
     public void cancelAction(ActionEvent actionEvent) {
         continueExecution = false;
-        parent.modalStage.close();
+        thisStage.close();
     }
 }

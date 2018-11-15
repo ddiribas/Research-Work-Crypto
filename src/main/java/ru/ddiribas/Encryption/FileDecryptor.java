@@ -2,6 +2,7 @@ package ru.ddiribas.Encryption;
 
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.util.encoders.Base64;
+import ru.ddiribas.MainApp;
 
 import java.io.*;
 import java.net.URLDecoder;
@@ -157,7 +158,8 @@ public class FileDecryptor {
 		try {
 			data = kuznechik.byteDecrypt(data, key);
 		} catch (InvalidCipherTextException e) {
-			e.printStackTrace();
+			MainApp.getMainController().showErrorWindow("Crypto Error: Invalid key or authentication data used.");
+			throw new StopOperationException();
 		}
 		return data;
 	}
