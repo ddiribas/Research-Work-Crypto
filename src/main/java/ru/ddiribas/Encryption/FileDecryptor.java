@@ -1,7 +1,9 @@
 package ru.ddiribas.Encryption;
 
+import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.DecoderException;
 import ru.ddiribas.MainApp;
 
 import java.io.*;
@@ -117,15 +119,21 @@ public class FileDecryptor {
         	e.printStackTrace();
 		}
 	}
+
 	private String decryptFileName(String fileName, byte[] key) throws UnsupportedEncodingException {
-//		System.out.println(fileName);
 		fileName = fileName.substring(0, fileName.lastIndexOf("."));
-//		System.out.println(fileName);
-		fileName = URLDecoder.decode(fileName, "UTF-8");
-//		System.out.println(fileName);
-		fileName = new String(decryptBytes(Base64.decode(fileName), key));
-//		System.out.println(fileName);
-		return fileName;
+		String result = URLDecoder.decode(fileName, "UTF-8");
+		try	{
+			result = new String(decryptBytes(Base64.decode(result), key));
+		} catch (DecoderException | DataLengthException e) {
+			MainApp.getMainController().showWarningWindow("The filename has been corrupted. Would you like to decrypt the file without it's name?");
+			if (!MainApp.getMainController().getWarningController().continueExecution) {
+				throw new StopOperationException("The operation was interrupted.");
+			} else {
+				return fileName;
+			}
+		}
+		return result;
 	}
 
 	private IntegrityCheckResult checkIntegrity(String fileName, byte[] buffer) {
@@ -158,8 +166,7 @@ public class FileDecryptor {
 		try {
 			data = kuznechik.byteDecrypt(data, key);
 		} catch (InvalidCipherTextException e) {
-			MainApp.getMainController().showErrorWindow("Crypto Error: Invalid key or authentication data used.");
-			throw new StopOperationException();
+			throw new StopOperationException("Crypto Error: Invalid key or authentication data used.");
 		}
 		return data;
 	}

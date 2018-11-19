@@ -68,7 +68,7 @@ public class MainController {
             modalStage.setTitle("Error");
             modalStage.setScene(new Scene(modalScene));
             modalStage.setResizable(false);
-            modalStage.show();
+            modalStage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -104,13 +104,13 @@ public class MainController {
             Stage modalStage = new Stage();
             warningController = fxmlLoader.getController();
             warningController.setParent(this, modalStage);
-            warningController.setLabel(label);
             warningController.continueExecution = true;
 
             modalStage.initModality(Modality.WINDOW_MODAL);
             modalStage.initOwner(mainApp.getMainWindow());
             modalStage.setTitle("Warning");
             modalStage.setScene(new Scene(modalScene));
+            warningController.setLabel(label);
             modalStage.setResizable(false);
             modalStage.showAndWait();
         } catch (IOException e) {
@@ -118,10 +118,6 @@ public class MainController {
         }
     }
 
-    /*TODO: Разобраться с нестандартными ситуациями:
-    Изменение файла между зашифрованием и расшифрованием
-    В частности нестандартная длина зашифрованного файла (падает, когда часть, отвечающая за данные самого файла, некратна длине блока)
-     */
     public void encrypt(ActionEvent actionEvent) {
         src = new File(pathField.getText());
         dst = src;
@@ -134,7 +130,6 @@ public class MainController {
             showErrorWindow(e.getLocalizedMessage());
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (StopOperationException ignored) {
         }
     }
 
@@ -146,7 +141,7 @@ public class MainController {
             FileDecryptor decryptor = FileDecryptor.getDecryptor(src, dst, keyFile, deleteOriginal, integrityControl, fingerPrint, encryptName, passwordAuth);
             EncryptionPerformer.prepareForDecryption(decryptor);
             infConsole.appendText(EncryptionPerformer.performDecryption(decryptor) + "\n");
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException | StopOperationException e) {
             showErrorWindow(e.getLocalizedMessage());
         } catch (IntegrityException e) {
             infConsole.appendText(e.getLocalizedMessage());

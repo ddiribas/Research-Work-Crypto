@@ -9,10 +9,10 @@
 
 <AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="80.0" prefWidth="250.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.ddiribas.controllers.ErrorController">
    <children>
-      <Label fx:id="warningLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="41.0" layoutY="10.0" prefHeight="29.0" prefWidth="185.0" textAlignment="CENTER" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="25.0">
+      <Label fx:id="errorLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="41.0" layoutY="10.0" prefHeight="29.0" prefWidth="185.0" textAlignment="CENTER" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="25.0">
          <font>
             <Font size="13.0" />
          </font></Label>
-      <Button fx:id="okButton" alignment="CENTER" contentDisplay="CENTER" defaultButton="true" mnemonicParsing="false" onAction="#closeAction" prefHeight="25.0" prefWidth="60.0" text="Ок" textAlignment="CENTER" AnchorPane.bottomAnchor="15.0" />
+      <Button fx:id="okButton" alignment="CENTER" contentDisplay="CENTER" defaultButton="true" layoutX="95.0" layoutY="39.0" mnemonicParsing="false" onAction="#closeAction" prefHeight="25.0" prefWidth="60.0" text="Ок" textAlignment="CENTER" AnchorPane.bottomAnchor="16.0" />
    </children>
 </AnchorPane>

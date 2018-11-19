@@ -67,8 +67,6 @@ public class EncryptionPerformer {
 //        if (decryptor.src.length())
     }
     public static String performEncryption(FileEncryptor encryptor) throws IOException {
-        //TODO: запилить предупреждение при некорректном файле-ключе
-
         //Encrypting
         StringBuilder information = new StringBuilder();
         information.append("Encrypting..." + "\n");

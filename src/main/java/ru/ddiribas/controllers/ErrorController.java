@@ -15,7 +15,7 @@ public class ErrorController {
     @FXML
     public Button okButton;
     @FXML
-    public Label warningLabel;
+    public Label errorLabel;
     String label = "";
 
     void setParent(MainController parent, Stage thisStage) {
@@ -28,10 +28,10 @@ public class ErrorController {
     }
 
     void setLabel(String s) {
-        warningLabel.setText(s);
-        warningLabel.setAlignment(Pos.BASELINE_CENTER);
-        thisStage.setWidth(warningLabel.getText().length() * 7);
-        warningLabel.setPrefWidth(warningLabel.getText().length() * 7);
+        errorLabel.setText(s);
+        thisStage.setWidth(errorLabel.getText().length() * 7);
+        errorLabel.setPrefWidth(errorLabel.getText().length() * 7);
+        errorLabel.setLayoutX((thisStage.getWidth() - errorLabel.getWidth())/2);
     }
 
     public void closeAction(ActionEvent actionEvent) {
